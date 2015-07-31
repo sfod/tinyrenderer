@@ -1,3 +1,4 @@
+#include <cmath>
 #include "tgaimage.h"
 
 const TGAColor white = TGAColor(255, 255, 255, 255);
@@ -17,14 +18,23 @@ void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color)
         std::swap(y0, y1);
     }
 
+    float derror = std::fabs(static_cast<float>(y1 - y0) / (x1 - x0));
+    float error = 0;
+    int y = y0;
+
     for (int x = x0; x <= x1; ++x) {
-        float t = static_cast<float>(x - x0) / (x1 - x0);
-        int y = static_cast<int>(y0 * (1.0 - t) + y1 * t);
         if (steep) {
             image.set(y, x, color);
         }
         else {
             image.set(x, y, color);
+        }
+
+        error += derror;
+
+        if (error > 0.5) {
+            y += y1 > y0 ? 1 : -1;
+            error -= 1.0;
         }
     }
 }
