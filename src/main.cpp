@@ -1,4 +1,7 @@
+#include <iostream>
+#include <memory>
 #include "tgaimage.h"
+#include "model.hpp"
 
 const TGAColor white = TGAColor(255, 255, 255, 255);
 const TGAColor red = TGAColor(255, 0, 0, 255);
@@ -39,14 +42,34 @@ void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color)
     }
 }
 
-int main()
+int main(int argc, char **argv)
 {
-    TGAImage image(100, 100, TGAImage::RGB);
+    std::string filename;
+    if (argc == 2) {
+        filename = argv[1];
+    }
+    else {
+        filename = "obj/african_head.obj";
+    }
+    auto model = std::make_shared<Model>(filename);
 
-    for (int i = 0; i < 1000000; ++i) {
-        line(13, 20, 80, 40, image, white);
-        line(20, 13, 40, 80, image, red);
-        line(80, 40, 13, 20, image, red);
+    const int width = 800;
+    const int height = 800;
+    TGAImage image(width, height, TGAImage::RGB);
+
+    for (int i = 0; i < model->face_num(); ++i) {
+        auto face = model->face(i);
+        for (int j = 0; j < 3; ++j) {
+            Vec3<float> v0 = model->vertex(face[j]);
+            Vec3<float> v1 = model->vertex(face[(j + 1) % 3]);
+
+            int x0 = (v0.x + 1.0) * width / 2.0;
+            int y0 = (v0.y + 1.0) * height / 2.0;
+            int x1 = (v1.x + 1.0) * width / 2.0;
+            int y1 = (v1.y + 1.0) * height / 2.0;
+
+            line(x0, y0, x1, y1, image, white);
+        }
     }
 
     image.flip_vertically();
